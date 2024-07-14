@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "outDir": "./dist",
+    "target": "ES6",
+    "noEmitOnError": true,
+    "strict": true,
+    "moduleResolution": "node",
+    "noUncheckedIndexedAccess": true,
+    "experimentalDecorators": true,
+    "esModuleInterop":true,
+    "skipLibCheck":true,
+    "forceConsistentCasingInFileNames":true,
+  },
+  "include": ["./server/**/*.ts"],
+  "exclude": ["node_modules"],
+  "compileOnSave": true
+}
