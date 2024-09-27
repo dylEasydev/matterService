@@ -94,7 +94,8 @@ export class MatterController extends BaseController{
                             `Aucune Permission de mis à jour de matière !`
                         );
                 }
-                const matterFind = await matterService.findMatterById(parseInt(req.params.id));
+                const id = isNaN(parseInt(req.params.id))?0:parseInt(req.params.id);
+                const matterFind = await matterService.findMatterById(id);
                 if(matterFind === null){
                     return statusResponse.sendResponseJson(
                         CodeStatut.NOT_FOUND_STATUS,
@@ -139,7 +140,8 @@ export class MatterController extends BaseController{
     async findMatterById(req:Request , res:Response){
         if(req.params.id){
             try {
-                const matterFind = await matterService.findMatterById(parseInt(req.params.id));
+                const id = isNaN(parseInt(req.params.id))?0:parseInt(req.params.id);
+                const matterFind = await matterService.findMatterById(id);
                 if(matterFind === null){
                     return statusResponse.sendResponseJson(
                         CodeStatut.CLIENT_STATUS,
@@ -165,30 +167,29 @@ export class MatterController extends BaseController{
     }
 
     async findMatterByName(req:Request , res:Response){
-        if(req.params.name){
-            try {
-                const matterFind = await matterService.findMatterByName(req.params.name);
-                if(matterFind === null){
-                    return statusResponse.sendResponseJson(
-                        CodeStatut.CLIENT_STATUS,
-                        res,
-                        `Aucune matière de noms ${req.params.name}`
-                    )
-                }
+        try {
+            const { name } = req.body
+            const matterFind = await matterService.findMatterByName(name);
+            if(matterFind === null){
                 return statusResponse.sendResponseJson(
-                    CodeStatut.VALID_STATUS,
+                    CodeStatut.CLIENT_STATUS,
                     res,
-                    `matière de noms ${req.params.name} bien trouvé`,
-                    matterFind
-                )
-            } catch (error) {
-                return statusResponse.sendResponseJson(
-                    CodeStatut.SERVER_STATUS,
-                    res,
-                    `Erreur au niveau du serveur , réessayé plus tard!`,
-                    error
+                    `Aucune matière de noms ${name}`
                 )
             }
+            return statusResponse.sendResponseJson(
+                CodeStatut.VALID_STATUS,
+                res,
+                `matière de noms ${name} bien trouvé`,
+                matterFind
+            )
+        } catch (error) {
+            return statusResponse.sendResponseJson(
+                CodeStatut.SERVER_STATUS,
+                res,
+                `Erreur au niveau du serveur , réessayé plus tard!`,
+                error
+            )
         }
     }
 
@@ -217,7 +218,8 @@ export class MatterController extends BaseController{
                             `Aucune Permission de suppression de matière !`
                         );
                 }
-                const matterFind = await matterService.findMatterById(parseInt(req.params.id));
+                const id = isNaN(parseInt(req.params.id))?0:parseInt(req.params.id);
+                const matterFind = await matterService.findMatterById(id);
                 if(matterFind === null){
                     return statusResponse.sendResponseJson(
                         CodeStatut.NOT_FOUND_STATUS,
@@ -252,9 +254,9 @@ export class MatterController extends BaseController{
 
     async findAllMatter(req:Request, res:Response){
         try {
-            const limit = (req.query.limit)?parseInt(req.query.limit as string):undefined;
+            const limit = (typeof req.query.limit === 'string')?parseInt(req.query.limit):undefined;
             if(req.query.searh){
-                const search = req.query.search as string;
+                const search = (typeof req.query.search === 'string')?req.query.search:'';
                 if(search.length < 2){
                     return statusResponse.sendResponseJson(
                         CodeStatut.CLIENT_STATUS,
@@ -312,7 +314,8 @@ export class MatterController extends BaseController{
                             `Aucune Permission de subcription à une matière!`
                         );
                 }
-                const matterFind = await matterService.findMatterById(parseInt(req.params.id));
+                const id = isNaN(parseInt(req.params.id))?0:parseInt(req.params.id);
+                const matterFind = await matterService.findMatterById(id);
                 if(matterFind === null) {
                     return statusResponse.sendResponseJson(
                         CodeStatut.NOT_FOUND_STATUS,

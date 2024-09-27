@@ -6,7 +6,7 @@ class MatterRouter extends BaseRouter<MatterController>{
     public initRoute(){
         this.routerServeur.get('/',this.controllerService.findAllMatter);
         this.routerServeur.get('/:id',this.controllerService.findMatterById);
-        this.routerServeur.get('/:name',this.controllerService.findMatterByName);
+        this.routerServeur.get('/name',this.controllerService.findMatterByName);
 
         this.routerServeur.put('/:id',auth.secureMiddleware,this.controllerService.updateMatter);
         this.routerServeur.delete('/:id',auth.secureMiddleware,this.controllerService.deleteMatter);

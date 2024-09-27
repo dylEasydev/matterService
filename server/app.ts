@@ -1,16 +1,17 @@
 import express,{Application} from 'express';
 import * as bodyParser from 'body-parser';
 import cors from 'cors';
+import brigde from 'http2-express-bridge';
 import{
-    adminRouter,followRouter,
-    indexRouter , matterRouter
+    adminRouter,followRouter,domainRouter,
+    indexRouter , matterRouter,userRouter
 }from './router';
 
 class ExpressApp{
     public expressServer: Application;
 
     constructor(){
-        this.expressServer = express();
+        this.expressServer = brigde(express);
         this.configServer();
     }
 
@@ -22,6 +23,8 @@ class ExpressApp{
                           .use('/matter',matterRouter)
                           .use('/admin',adminRouter)
                           .use('/follow', followRouter)
+                          .use('/domain',domainRouter)
+                          .use('/user',userRouter)
                           .use('*',(req,res)=>{
                                 res.redirect('/docs');
                           })

@@ -8,8 +8,25 @@ export class FollowMatterController extends BaseController{
 
     async findFollowUser(req:Request, res:Response){
         try {
-            const limit = req.query.limit? parseInt(req.query.limit as string) : undefined;
+            const limit = (typeof req.query.limit === 'string')?parseInt(req.query.limit) : undefined;
             const userToken = req.body.token as Token;
+            if(req.query.searh){
+                const search = (typeof req.query.search === 'string')?req.query.search:'';
+                if(search.length < 2){
+                    return statusResponse.sendResponseJson(
+                        CodeStatut.CLIENT_STATUS,
+                        res,
+                        `vous devez donner au moins 2 carractères pour effectuer la recherche!`
+                    );
+                }
+                const tableMatter = await followMatterService.findMatterFollow(userToken.userId,limit , search);
+                return statusResponse.sendResponseJson(
+                    CodeStatut.VALID_STATUS,
+                    res,
+                    `Nous avons trouver ${tableMatter.count} résultats au terme de recherche ${search}!`,
+                    tableMatter.rows
+                );
+            }
             const tableMatter =  await followMatterService.findMatterFollow(userToken.userId, limit);
             return statusResponse.sendResponseJson(
                 CodeStatut.VALID_STATUS,
@@ -52,7 +69,8 @@ export class FollowMatterController extends BaseController{
                             `Aucune Permission de désabonnement à une matière !`
                         );
                 }
-                const domainFind = await matterService.findMatterById(parseInt(req.params.id));
+                const id = isNaN(parseInt(req.params.id))?0:parseInt(req.params.id);
+                const domainFind = await matterService.findMatterById(id);
                 if(domainFind === null) {
                     return statusResponse.sendResponseJson(
                         CodeStatut.NOT_FOUND_STATUS,
@@ -61,7 +79,7 @@ export class FollowMatterController extends BaseController{
                     );
                 }
                 
-                await followMatterService.deSubscribeMatter(userToken.userId , parseInt(req.params.id));
+                await followMatterService.deSubscribeMatter(userToken.userId , id);
                 return statusResponse.sendResponseJson(
                     CodeStatut.VALID_STATUS,
                     res,

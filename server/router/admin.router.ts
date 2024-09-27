@@ -4,7 +4,9 @@ import { BaseRouter } from './base.router';
 
 class AdminRouter extends BaseRouter<AdminController>{
     public initRoute(){
-        this.routerServeur.delete('/',auth.secureMiddleware , this.controllerService.suspendMatter)
+        this.routerServeur.post('/:id',auth.secureMiddleware , this.controllerService.restoreMatter);
+        this.routerServeur.delete('/:id',auth.secureMiddleware , this.controllerService.suspendMatter);
+        this.routerServeur.get('/',auth.secureMiddleware ,this.controllerService.findAllMatterSuspend);
     }
 } 
 

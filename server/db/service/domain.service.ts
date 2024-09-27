@@ -7,7 +7,7 @@ export class RequestError extends Error{
     public data:any;
     constructor(
         status:number,
-        data:any,
+        data:unknown,
         message?:string
     ){
         super(message);
@@ -23,6 +23,8 @@ export class DomainService implements DomainInterfaceService{
             baseURL:'http://localhost:3002/',
             timeout:3000,
             headers:{
+                Upgrade:"h2",
+                Connection:"keep-alive",
                 Authorization:`Bearer ${jeton}`
             }
         })
@@ -31,7 +33,7 @@ export class DomainService implements DomainInterfaceService{
         return new Promise<{message:string; data:Domain;}>(async(resolve, reject) => {
             try {
                 const domainSubcribes = await this.axiosRequest.get<
-                {message:string; data:any;}
+                {message:string; data:unknown;}
                 >(`/domain/${domainId}`,{
                     validateStatus:(status:number)=>{return status < 500}
                 });

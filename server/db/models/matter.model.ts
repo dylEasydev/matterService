@@ -21,7 +21,7 @@ export class Matter extends Model<
 
     declare readonly createdAt:CreationOptional<Date>;
     declare readonly updatedAt:CreationOptional<Date>;
-    declare readonly deletedAt:CreationOptional<Date>;
+    declare readonly deletedAt:CreationOptional<Date|null>;
 
     createImage(
         value?:{urlPictures?:string; picturesName?:string},

@@ -26,5 +26,5 @@ export interface MatterInterface extends Model<
 
     readonly createdAt:CreationOptional<Date>;
     readonly updatedAt:CreationOptional<Date>;
-    readonly deletedAt:CreationOptional<Date>;
+    readonly deletedAt:CreationOptional<Date|null>;
 }

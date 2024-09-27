@@ -7,7 +7,7 @@ import path from 'path';
 export class IndexController  extends BaseController{
 
     async accueilService(req:Request , res:Response){
-        return statusResponse.sendResponseJson(CodeStatut.VALID_STATUS,res,`Bienvenue sur user-service-easyclass api !`);
+        return statusResponse.sendResponseJson(CodeStatut.VALID_STATUS,res,`Bienvenue sur matter-service-easyclass api !`);
     }
 
     async documentationService(req:Request , res:Response){

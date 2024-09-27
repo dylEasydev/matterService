@@ -1,10 +1,10 @@
 import { Op } from 'sequelize';
 import { 
-    Matter , sequelizedb2 , Domain ,sequelizedb1,Image,
-    FollowMatter
+    Matter , sequelizedb2 , Domain ,sequelizedb1,Image,FollowMatter
 } from '../../db';
 import { MatterInterfaceService } from './interface';
 import { FollowMatterInterface, MatterInterface } from '../interface';
+import { __urlImage } from '../../global_dir';
 
 class MatterService implements MatterInterfaceService{
     createMatter<
@@ -21,7 +21,7 @@ class MatterService implements MatterInterfaceService{
                     },{transaction:t});
                     matter.image = await sequelizedb1.transaction(async t1=>{
                         const picture = await matter.createImage({
-                            urlPictures:'http://127.0.0.1:3002/public/matter_default.jpeg',
+                            urlPictures:`${__urlImage}/public/matter_default.jpeg`,
                             picturesName:'matter_default.jpeg'
                         },{transaction:t1});
                         return picture.urlPictures;
@@ -58,12 +58,12 @@ class MatterService implements MatterInterfaceService{
                                                 "subjectId" = "Matter"."id"
                                         )`
                                     )
-                                    ,`nbreSubcribe`
+                                    ,`nbreSubcribes`
                                 ]
                             ]
                         }
-                    })
-                })
+                    });
+                });
                 if(matterFind !== null){
                     matterFind.image = await sequelizedb1.transaction(async t=>{
                         const pictures = await Image.findOne({
@@ -72,12 +72,12 @@ class MatterService implements MatterInterfaceService{
                                 nameTable:Matter.tableName
                             }
                         })
-                        return pictures?.urlPictures
-                    })
-                }
-                resolve({...matterFind?.dataValues ,image:matterFind?.image} as Matter|null);
+                        return pictures?.urlPictures;
+                    });
+                    resolve({...matterFind.dataValues ,image:matterFind.image} as Matter);
+                }else resolve(matterFind);
             } catch (error) {
-                reject(error)
+                reject(error);
             }
         })
     }
@@ -102,12 +102,12 @@ class MatterService implements MatterInterfaceService{
                                                 "subjectId" = "Matter"."id"
                                         )`
                                     )
-                                    ,`nbreSubcribe`
+                                    ,`nbreSubcribes`
                                 ]
                             ]
                         }
-                    })
-                })
+                    });
+                });
                 if(matterFind !== null){
                     matterFind.image = await sequelizedb1.transaction(async t=>{
                         const pictures = await Image.findOne({
@@ -115,13 +115,13 @@ class MatterService implements MatterInterfaceService{
                                 foreignId: matterFind.id,
                                 nameTable:Matter.tableName
                             }
-                        })
-                        return pictures?.urlPictures
-                    })
-                }
-                resolve({...matterFind?.dataValues ,image:matterFind?.image} as Matter|null);
+                        });
+                        return pictures?.urlPictures;
+                    });
+                    resolve({...matterFind.dataValues ,image:matterFind.image} as Matter);
+                }else resolve(matterFind);
             } catch (error) {
-                reject(error)
+                reject(error);
             }
         })
     }
@@ -135,7 +135,9 @@ class MatterService implements MatterInterfaceService{
                     return await Matter.findAndCountAll({
                         where:{
                             subjectName:{
-                                [Op.like]:`%${search}%`
+                                [Op.like]:{
+                                    [Op.any]:search?search.split('').map(chaine=>`%${chaine}%`):['']
+                                }
                             }
                         },
                         limit,
@@ -154,15 +156,15 @@ class MatterService implements MatterInterfaceService{
                                                 "subjectId" = "Matter"."id"
                                         )`
                                     )
-                                    ,`nbreSubcribe`
+                                    ,`nbreSubcribes`
                                 ]
                             ]
                         },
                         order:[
                             [
                                 sequelizedb2.getDialect() !== 'postgres'?
-                                sequelizedb2.literal(`nbreSubscribe`):
-                                sequelizedb2.literal(`"nbreSubscribe"`)
+                                sequelizedb2.literal(`nbreSubscribes`):
+                                sequelizedb2.literal(`"nbreSubscribes"`)
                                 ,'DESC'
                             ]
                         ]
@@ -224,11 +226,12 @@ class MatterService implements MatterInterfaceService{
             }
         })
     }
+
     deleteMatter(instance: MatterInterface){
         return new Promise<void>(async(resolve, reject) => {
             try {
                 await sequelizedb2.transaction(async t=>{
-                    await instance.destroy({force:true});
+                    await Matter.destroy({where:{id:instance.id},force:true});
                 })
                 resolve();
             } catch (error) {
@@ -236,17 +239,281 @@ class MatterService implements MatterInterfaceService{
             }
         })
     }
+
     suspendMatter(instance: MatterInterface){
         return new Promise<void>(async(resolve, reject) => {
             try {
                 await sequelizedb2.transaction(async t=>{
-                    await instance.destroy();
+                    await Matter.destroy({where:{id:instance.id}});
                 })
                 resolve();
             } catch (error) {
                 reject(error);
             }
         })       
+    }
+
+    restoreMatter(id: number){
+        return new Promise<Matter | null>(async (resolve, reject) => {
+            try {
+                const matterRestore = await sequelizedb2.transaction(async t=>{
+                    const matterFind = await Matter.findByPk(id,{
+                        attributes:{
+                            include:[
+                                [
+                                    sequelizedb2.literal(
+                                        sequelizedb2.getDialect() !== 'postgres'?
+                                        `(
+                                            SELECT COUNT(*) from followMatter as fm
+                                            WHERE 
+                                                fm.subjectId= matter.id
+                                        )`:`(
+                                            SELECT COUNT(*) FROM "followMatter"
+                                            WHERE 
+                                                "subjectId" = "Matter"."id"
+                                        )`
+                                    )
+                                    ,`nbreSubcribes`
+                                ]
+                            ]
+                        },
+                        paranoid:false
+                    })
+                    if(matterFind !== null){
+                        await matterFind.restore();
+                        matterFind.image = await sequelizedb1.transaction(async t=>{
+                            const pictures = await Image.findOne({
+                                where:{
+                                    foreignId: matterFind.id,
+                                    nameTable:Matter.tableName
+                                }
+                            });
+                            return pictures?.urlPictures;
+                        });
+                        return {...matterFind.dataValues ,image:matterFind.image} as Matter ;
+                    }else return matterFind;
+                })
+                resolve(matterRestore);
+            } catch (error) {
+                reject(error);
+            }
+        })
+    }
+
+    findAllMatterSuspend(limit?: number, search=''){
+        return new Promise<{
+             rows: Matter[]; count: number; 
+        }>(async (resolve, reject)=>{
+            try {
+                const tableMatter = await sequelizedb2.transaction(async t=>{
+                    return await Matter.findAndCountAll({
+                        where:{
+                            [Op.and]:[
+                                {
+                                    subjectName:{
+                                        [Op.like]:{
+                                            [Op.any]:search?search.split('').map(chaine=>`%${chaine}%`):['']
+                                        }
+                                    }
+                                },
+                                {
+                                    deletedAt:{
+                                        [Op.not]:null
+                                    }
+                                }
+                            ]
+                        },
+                        limit,
+                        attributes:{
+                            include:[
+                                [
+                                    sequelizedb2.literal(
+                                        sequelizedb2.getDialect() !== 'postgres'?
+                                        `(
+                                            SELECT COUNT(*) from followMatter as fm
+                                            WHERE 
+                                                fm.subjectId= matter.id
+                                        )`:`(
+                                            SELECT COUNT(*) FROM "followMatter"
+                                            WHERE 
+                                                "subjectId" = "Matter"."id"
+                                        )`
+                                    )
+                                    ,`nbreSubcribes`
+                                ]
+                            ]
+                        },
+                        paranoid:false,
+                        order:[
+                            [
+                                sequelizedb2.getDialect() !== 'postgres'?
+                                sequelizedb2.literal(`nbreSubscribes`):
+                                sequelizedb2.literal(`"nbreSubscribes"`)
+                                ,'DESC'
+                            ]
+                        ]
+                    })
+                });
+                tableMatter.rows = await sequelizedb1.transaction(async t=>{
+                    return await Promise.all(tableMatter.rows.map(async elts=>{
+                        const picture = await Image.findOne({
+                            where:{
+                                foreignId:elts.id,
+                                nameTable:Matter.tableName
+                            },
+                            transaction:t
+                        });
+                        elts.image = picture?.urlPictures;
+                        return {...elts.dataValues, image: elts.image} as Matter;
+                    }))
+                })
+                resolve(tableMatter);
+            } catch (error) {
+                reject(error);               
+            }
+        }) 
+    }
+
+    findAllMatterDomain(domainId:number,limit?: number, search=''){
+        return new Promise<{
+             rows: Matter[]; count: number; 
+        }>(async (resolve, reject)=>{
+            try {
+                const tableMatter = await sequelizedb2.transaction(async t=>{
+                    return await Matter.findAndCountAll({
+                        where:{
+                            [Op.and]:[
+                                {
+                                    subjectName:{
+                                        [Op.like]:{
+                                            [Op.any]:search?search.split('').map(chaine=>`%${chaine}`):['']
+                                        }
+                                    }
+                                },
+                                {
+                                    domainId
+                                }
+                            ]
+                        },
+                        limit,
+                        attributes:{
+                            include:[
+                                [
+                                    sequelizedb2.literal(
+                                        sequelizedb2.getDialect() !== 'postgres'?
+                                        `(
+                                            SELECT COUNT(*) from followMatter as fm
+                                            WHERE 
+                                                fm.subjectId= matter.id
+                                        )`:`(
+                                            SELECT COUNT(*) FROM "followMatter"
+                                            WHERE 
+                                                "subjectId" = "Matter"."id"
+                                        )`
+                                    )
+                                    ,`nbreSubcribes`
+                                ]
+                            ]
+                        },
+                        order:[
+                            [
+                                sequelizedb2.getDialect() !== 'postgres'?
+                                sequelizedb2.literal(`nbreSubscribes`):
+                                sequelizedb2.literal(`"nbreSubscribes"`)
+                                ,'DESC'
+                            ]
+                        ]
+                    })
+                });
+                tableMatter.rows = await sequelizedb1.transaction(async t=>{
+                    return await Promise.all(tableMatter.rows.map(async elts=>{
+                        const picture = await Image.findOne({
+                            where:{
+                                foreignId:elts.id,
+                                nameTable:Matter.tableName
+                            },
+                            transaction:t
+                        });
+                        elts.image = picture?.urlPictures;
+                        return {...elts.dataValues, image: elts.image} as Matter;
+                    }))
+                })
+                resolve(tableMatter);
+            } catch (error) {
+                reject(error);               
+            }
+        }) 
+    }
+
+    findAllMatterTeacher(userId:number,limit?: number, search=''){
+        return new Promise<{
+             rows: Matter[]; count: number; 
+        }>(async (resolve, reject)=>{
+            try {
+                const tableMatter = await sequelizedb2.transaction(async t=>{
+                    return await Matter.findAndCountAll({
+                        where:{
+                            [Op.and]:[
+                                {
+                                    subjectName:{
+                                        [Op.like]:{
+                                            [Op.any]:search?search.split('').map(chaine=>`%${chaine}`):['']
+                                        }
+                                    }
+                                },
+                                {
+                                    userId
+                                }
+                            ]
+                        },
+                        limit,
+                        attributes:{
+                            include:[
+                                [
+                                    sequelizedb2.literal(
+                                        sequelizedb2.getDialect() !== 'postgres'?
+                                        `(
+                                            SELECT COUNT(*) from followMatter as fm
+                                            WHERE 
+                                                fm.subjectId= matter.id
+                                        )`:`(
+                                            SELECT COUNT(*) FROM "followMatter"
+                                            WHERE 
+                                                "subjectId" = "Matter"."id"
+                                        )`
+                                    )
+                                    ,`nbreSubcribes`
+                                ]
+                            ]
+                        },
+                        order:[
+                            [
+                                sequelizedb2.getDialect() !== 'postgres'?
+                                sequelizedb2.literal(`nbreSubscribes`):
+                                sequelizedb2.literal(`"nbreSubscribes"`)
+                                ,'DESC'
+                            ]
+                        ]
+                    })
+                });
+                tableMatter.rows = await sequelizedb1.transaction(async t=>{
+                    return await Promise.all(tableMatter.rows.map(async elts=>{
+                        const picture = await Image.findOne({
+                            where:{
+                                foreignId:elts.id,
+                                nameTable:Matter.tableName
+                            },
+                            transaction:t
+                        });
+                        elts.image = picture?.urlPictures;
+                        return {...elts.dataValues, image: elts.image} as Matter;
+                    }))
+                })
+                resolve(tableMatter);
+            } catch (error) {
+                reject(error);               
+            }
+        }) 
     }
 }
 

@@ -1,15 +1,23 @@
 import { MatterInterface } from '../interface';
 import { FollowMatter ,Image , Matter ,sequelizedb1 ,sequelizedb2} from '../../db';
 import { FollowMatterServiceInterface } from './interface';
+import { Op } from 'sequelize';
 
 class FollowMatterService implements FollowMatterServiceInterface{
     
-    findMatterFollow(userId: number, limit?: number | undefined){
+    findMatterFollow(userId: number, limit?: number | undefined ,search='' ){
         return new Promise<{ count: number; rows: MatterInterface[]; }>(async (resolve, reject)=>{
             try {
                 const tableMatter = await sequelizedb2.transaction(async t=>{
                     const tableFollow = await FollowMatter.findAndCountAll({
-                        where:{userId},
+                        where:{
+                            userId,
+                            '$matter.subjectName$':{
+                                [Op.like]:{
+                                    [Op.any]:search?search.split('').map(chaine=>`%${chaine}%`):['']
+                                }
+                            }
+                        },
                         limit,
                         include:[
                             {
@@ -26,10 +34,10 @@ class FollowMatterService implements FollowMatterServiceInterface{
                                                 )`:`(
                                                     SELECT COUNT(*) FROM "followMatter"
                                                     WHERE 
-                                                        "subjectId" = "Matter"."id"
+                                                        "subjectId" = "matter"."id"
                                                 )`
                                             )
-                                            ,`nbreSubcribe`
+                                            ,`nbreSubcribes`
                                         ]
                                     ]
                                 }
@@ -69,7 +77,8 @@ class FollowMatterService implements FollowMatterServiceInterface{
                         where:{
                             userId,
                             subjectId
-                        }
+                        },
+                        force:true
                     });
                 });
                 resolve();
