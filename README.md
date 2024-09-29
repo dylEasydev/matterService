@@ -35,7 +35,7 @@ Créer un fichier `.env`à la racine du projet puis copiez le code si dessous à
 
 ```js
 
-PORT = 3003//port du serveur
+PORT = 3004//port du serveur
 DB_NAME_1= // nom de la BD du serveur d'authentification
 DB_HOST_1 = localhost
 DB_DRIVER_1 = //postgres ou mysql
