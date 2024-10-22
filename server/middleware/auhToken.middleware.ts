@@ -43,6 +43,33 @@ class AuthToken {
             )
        }
     }
+    verifPermToken(permName: string){
+        return async (req:Request , res:Response , next:()=>void)=>{
+            const token = req.body.token as Token
+            if(typeof token.scope ==='string'){
+                if(token.scope !== permName)
+                    return statusResponse.sendResponseJson(
+                        CodeStatut.NOT_PERMISSION_STATUS,
+                        res,
+                        `Aucune permissions !`
+                    );
+            }else if(typeof token.scope === 'undefined'){
+                return statusResponse.sendResponseJson(
+                    CodeStatut.NOT_PERMISSION_STATUS,
+                    res,
+                    `Aucune permissions !`
+                );
+            }else{
+                if(!token.scope.includes(permName))
+                    return statusResponse.sendResponseJson(
+                        CodeStatut.NOT_PERMISSION_STATUS,
+                        res,
+                        `Aucune permissions !`
+                    );
+                next();
+            }
+        }
+    }
 }
 
 export default new AuthToken();

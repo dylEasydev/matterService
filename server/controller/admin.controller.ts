@@ -8,28 +8,6 @@ export class AdminController extends BaseController{
     async suspendMatter(req:Request , res:Response){
         if(req.params.id){
             try {
-                const userToken = req.body.token as Token;
-                if(typeof userToken.scope ==='string'){
-                    if(userToken.scope !== 'suspend:matter')
-                        return statusResponse.sendResponseJson(
-                            CodeStatut.NOT_PERMISSION_STATUS,
-                            res,
-                            `Aucune Permission de suspension de matière !`
-                        );
-                }else if(typeof userToken.scope === 'undefined'){
-                    return statusResponse.sendResponseJson(
-                        CodeStatut.NOT_PERMISSION_STATUS,
-                        res,
-                        `Aucune Permission de suspension de matière !`
-                    );
-                }else{
-                    if(!userToken.scope.includes('suspend:matter'))
-                        return statusResponse.sendResponseJson(
-                            CodeStatut.NOT_PERMISSION_STATUS,
-                            res,
-                            `Aucune Permission de suspension de matière !`
-                        );
-                }
                 const id = isNaN(parseInt(req.params.id))?0:parseInt(req.params.id);
                 const matterFind = await matterService.findMatterById(id);
                 if(matterFind === null){
@@ -60,28 +38,6 @@ export class AdminController extends BaseController{
     async restoreMatter(req:Request , res:Response){
         if(req.params.id){
             try {
-                const userToken = req.body.token as Token;
-                if(typeof userToken.scope ==='string'){
-                    if(userToken.scope !== 'restored:matter')
-                        return statusResponse.sendResponseJson(
-                            CodeStatut.NOT_PERMISSION_STATUS,
-                            res,
-                            `Aucune Permission de restaurer une matière !`
-                        );
-                }else if(typeof userToken.scope === 'undefined'){
-                    return statusResponse.sendResponseJson(
-                        CodeStatut.NOT_PERMISSION_STATUS,
-                        res,
-                        `Aucune Permission de restaurer une matière !`
-                    );
-                }else{
-                    if(!userToken.scope.includes('restored:matter'))
-                        return statusResponse.sendResponseJson(
-                            CodeStatut.NOT_PERMISSION_STATUS,
-                            res,
-                            `Aucune Permission de restaurer une matière !`
-                        );
-                }
                 const id = isNaN(parseInt(req.params.id))?0:parseInt(req.params.id);
                 const matterRestore = await matterService.restoreMatter(id);
                 if(matterRestore === null){
@@ -110,28 +66,6 @@ export class AdminController extends BaseController{
 
     async findAllMatterSuspend(req:Request, res:Response){
         try {
-            const userToken = req.body.token as Token;
-                if(typeof userToken.scope ==='string'){
-                    if(userToken.scope !== 'find:suspend')
-                        return statusResponse.sendResponseJson(
-                            CodeStatut.NOT_PERMISSION_STATUS,
-                            res,
-                            `Aucune Permission !`
-                        );
-                }else if(typeof userToken.scope === 'undefined'){
-                    return statusResponse.sendResponseJson(
-                        CodeStatut.NOT_PERMISSION_STATUS,
-                        res,
-                        `Aucune Permission !`
-                    );
-                }else{
-                    if(!userToken.scope.includes('find:suspend'))
-                        return statusResponse.sendResponseJson(
-                            CodeStatut.NOT_PERMISSION_STATUS,
-                            res,
-                            `Aucune Permission !`
-                        );
-                }
             const limit = (typeof req.query.limit === 'string')?parseInt(req.query.limit):undefined;
             if(req.query.searh){
                 const search = (typeof req.query.search === 'string')? req.query.search : '';

@@ -8,11 +8,11 @@ class MatterRouter extends BaseRouter<MatterController>{
         this.routerServeur.get('/:id',this.controllerService.findMatterById);
         this.routerServeur.get('/name',this.controllerService.findMatterByName);
 
-        this.routerServeur.put('/:id',auth.secureMiddleware,this.controllerService.updateMatter);
-        this.routerServeur.delete('/:id',auth.secureMiddleware,this.controllerService.deleteMatter);
+        this.routerServeur.put('/:id',auth.secureMiddleware,auth.verifPermToken('updated:matter'),this.controllerService.updateMatter);
+        this.routerServeur.delete('/:id',auth.secureMiddleware,auth.verifPermToken('deleted:matter'),this.controllerService.deleteMatter);
         
-        this.routerServeur.post('/',auth.secureMiddleware,this.controllerService.createMatter);
-        this.routerServeur.post('/follow',auth.secureMiddleware,this.controllerService.followMatter);
+        this.routerServeur.post('/',auth.secureMiddleware,auth.verifPermToken('created:matter'),this.controllerService.createMatter);
+        this.routerServeur.post('/follow',auth.secureMiddleware,auth.verifPermToken('subscribes:matter'),this.controllerService.followMatter);
     }
 }
 

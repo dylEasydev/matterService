@@ -5,7 +5,7 @@ import { BaseRouter } from './base.router';
 class FollowRouter extends BaseRouter<FollowMatterController>{
     public initRoute(){
         this.routerServeur.get('/',auth.secureMiddleware,this.controllerService.findFollowUser);
-        this.routerServeur.delete('/',auth.secureMiddleware,this.controllerService.desSubscribeMatter);
+        this.routerServeur.delete('/',auth.secureMiddleware,auth.verifPermToken('desubcribes:matter'),this.controllerService.desSubscribeMatter);
     }
 }
 

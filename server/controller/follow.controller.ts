@@ -47,28 +47,7 @@ export class FollowMatterController extends BaseController{
     async desSubscribeMatter(req:Request , res:Response){
         if(req.params.id){
             try {
-                const userToken = req.body.token as Token
-                if(typeof userToken.scope ==='string'){
-                    if(userToken.scope !== 'deSubscribed:matter')
-                        return statusResponse.sendResponseJson(
-                            CodeStatut.NOT_PERMISSION_STATUS,
-                            res,
-                            `Aucune Permission de désabonnement à une matière !`
-                        );
-                }else if(typeof userToken.scope === 'undefined'){
-                    return statusResponse.sendResponseJson(
-                        CodeStatut.NOT_PERMISSION_STATUS,
-                        res,
-                        `Aucune Permission de désabonnement à une matière  !`
-                    );
-                }else{
-                    if(!userToken.scope.includes('deSubscribed:matter'))
-                        return statusResponse.sendResponseJson(
-                            CodeStatut.NOT_PERMISSION_STATUS,
-                            res,
-                            `Aucune Permission de désabonnement à une matière !`
-                        );
-                }
+                const userToken = req.body.token as Token;
                 const id = isNaN(parseInt(req.params.id))?0:parseInt(req.params.id);
                 const domainFind = await matterService.findMatterById(id);
                 if(domainFind === null) {

@@ -11,28 +11,6 @@ export class MatterController extends BaseController{
     async createMatter(req:Request ,res:Response){
         try {
             const userToken = req.body.token as Token;
-            if(typeof userToken.scope ==='string'){
-                if(userToken.scope !== 'created:matter')
-                    return statusResponse.sendResponseJson(
-                        CodeStatut.NOT_PERMISSION_STATUS,
-                        res,
-                        `Aucune Permission de création de matière !`
-                    );
-            }else if(typeof userToken.scope === 'undefined'){
-                return statusResponse.sendResponseJson(
-                    CodeStatut.NOT_PERMISSION_STATUS,
-                    res,
-                    `Aucune Permission de création de matière !`
-                );
-            }else{
-                if(!userToken.scope.includes('created:matter'))
-                    return statusResponse.sendResponseJson(
-                        CodeStatut.NOT_PERMISSION_STATUS,
-                        res,
-                        `Aucune Permission de création de matière !`
-                    );
-            }
-
             const {domainId , subjectName , subjectDescript} = req.body;
             const domain = (await new DomainService().getDomainById(domainId)).data;
             const newMatter = await matterService.createMatter({subjectName,subjectDescript},domain,userToken.userId);
@@ -73,27 +51,6 @@ export class MatterController extends BaseController{
         if(req.params.id){
             try {
                 const userToken = req.body.token as Token;
-                if(typeof userToken.scope ==='string'){
-                    if(userToken.scope !== 'updated:matter')
-                        return statusResponse.sendResponseJson(
-                            CodeStatut.NOT_PERMISSION_STATUS,
-                            res,
-                            `Aucune Permission de mis à jour de matière !`
-                        );
-                }else if(typeof userToken.scope === 'undefined'){
-                    return statusResponse.sendResponseJson(
-                        CodeStatut.NOT_PERMISSION_STATUS,
-                        res,
-                        `Aucune Permission de mis à jour de matière !`
-                    );
-                }else{
-                    if(!userToken.scope.includes('updated:matter'))
-                        return statusResponse.sendResponseJson(
-                            CodeStatut.NOT_PERMISSION_STATUS,
-                            res,
-                            `Aucune Permission de mis à jour de matière !`
-                        );
-                }
                 const id = isNaN(parseInt(req.params.id))?0:parseInt(req.params.id);
                 const matterFind = await matterService.findMatterById(id);
                 if(matterFind === null){
@@ -197,27 +154,6 @@ export class MatterController extends BaseController{
         if(req.params.id){
             try {
                 const userToken = req.body.token as Token;
-                if(typeof userToken.scope ==='string'){
-                    if(userToken.scope !== 'deleted:matter')
-                        return statusResponse.sendResponseJson(
-                            CodeStatut.NOT_PERMISSION_STATUS,
-                            res,
-                            `Aucune Permission de suppression de matière !`
-                        );
-                }else if(typeof userToken.scope === 'undefined'){
-                    return statusResponse.sendResponseJson(
-                        CodeStatut.NOT_PERMISSION_STATUS,
-                        res,
-                        `Aucune Permission de suppression de matière !`
-                    );
-                }else{
-                    if(!userToken.scope.includes('deleted:matter'))
-                        return statusResponse.sendResponseJson(
-                            CodeStatut.NOT_PERMISSION_STATUS,
-                            res,
-                            `Aucune Permission de suppression de matière !`
-                        );
-                }
                 const id = isNaN(parseInt(req.params.id))?0:parseInt(req.params.id);
                 const matterFind = await matterService.findMatterById(id);
                 if(matterFind === null){
@@ -292,28 +228,7 @@ export class MatterController extends BaseController{
     async followMatter(req:Request , res:Response){
         if(req.params.id){
             try {
-                const userToken = req.body.token as Token
-                if(typeof userToken.scope ==='string'){
-                    if(userToken.scope !== 'subscribed:matter')
-                        return statusResponse.sendResponseJson(
-                            CodeStatut.NOT_PERMISSION_STATUS,
-                            res,
-                            `Aucune Permission de subcription à une matière !`
-                        );
-                }else if(typeof userToken.scope === 'undefined'){
-                    return statusResponse.sendResponseJson(
-                        CodeStatut.NOT_PERMISSION_STATUS,
-                        res,
-                        `Aucune Permission de subcription à une matière!`
-                    );
-                }else{
-                    if(!userToken.scope.includes('subscribed:matter'))
-                        return statusResponse.sendResponseJson(
-                            CodeStatut.NOT_PERMISSION_STATUS,
-                            res,
-                            `Aucune Permission de subcription à une matière!`
-                        );
-                }
+                const userToken = req.body.token as Token;
                 const id = isNaN(parseInt(req.params.id))?0:parseInt(req.params.id);
                 const matterFind = await matterService.findMatterById(id);
                 if(matterFind === null) {
